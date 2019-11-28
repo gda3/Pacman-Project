@@ -187,7 +187,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
             if u == v: actions.append(a)
             elif u>=v: v = u; actions = [a]     
 
-
         return random.choice(actions)
 
         #util.raiseNotDefined()

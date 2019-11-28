@@ -188,7 +188,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
             elif u>=v: v = u; actions = [a]     
 
         return random.choice(actions)
-
         #util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):

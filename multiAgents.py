@@ -216,11 +216,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             v = -sys.maxint
             for a in gameState.getLegalActions(agent):
                 v = max(v,min_value(result(gameState,agent,a), alpha, beta, 1,depth))
+                # Cut branch
                 if v > beta: return v
                 alpha = max(alpha, v)
             return v
 
         def min_value(gameState, alpha, beta, agent, depth):
+           # If it is a leaf we calculate the value of this (evaluationFunction)
             if terminalTest(gameState, depth): return utility(gameState)
             v = sys.maxint
             for a in gameState.getLegalActions(agent):
@@ -228,6 +230,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     v = min(v, max_value(result(gameState,agent,a), alpha, beta, 0, depth-1))
                 else:
                     v = min(v, min_value(result(gameState,agent,a), alpha, beta, agent+1, depth))
+                # Cut branch
                 if v < alpha: 
                   return v
                 beta = min(beta, v)
@@ -236,8 +239,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # AlphaBetaSearch
         v = -sys.maxint 
         actions = []
+        # Alpha =  Most favorable value for a maximum
+        # beta = Most favorable value for a minimum
         alpha = -sys.maxint
 
+        # The Pacman takes the minimum from each branch and obtains the maximum (alpha).
         for a in gameState.getLegalActions(0):       
             u = min_value(result(gameState, 0, a), alpha, sys.maxint, 1, self.depth)
             if u == v: 
@@ -263,7 +269,45 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        import sys
+        def result(gameState, agent, action):
+            return gameState.generateSuccessor(agent, action)
+
+        def utility(gameState):
+            return self.evaluationFunction(gameState)
+
+        def terminalTest(gameState, depth):
+            return depth == 0 or gameState.isWin() or gameState.isLose()
+
+        def max_value(gameState, agent, depth):
+            if terminalTest(gameState, depth): return utility(gameState)
+            v = -sys.maxint
+            for a in gameState.getLegalActions(agent):
+                v = max(v, min_value(result(gameState, agent, a), 1, depth))
+            return v
+
+        def min_value(gameState, agent, depth):
+            if terminalTest(gameState, depth): return utility(gameState)
+            v = sys.maxint
+            listValues = []
+            for a in gameState.getLegalActions(agent):
+                if (agent == gameState.getNumAgents() - 1):
+                    listValues.append(min(v, max_value(result(gameState, agent, a), 0, depth - 1)))
+                else:
+                    listValues.append(min(v, min_value(result(gameState, agent, a), agent + 1, depth)))
+                    
+            average = sum(listValues)/len(gameState.getLegalActions(agent))
+            return average
+
+        v = -sys.maxint
+        actions = []
+        for a in gameState.getLegalActions(0):        
+            u = min_value(result(gameState, 0, a), 1, self.depth)
+            if u == v: actions.append(a)
+            elif u >= v: v = u; actions = [a] 
+
+        return random.choice(actions)
+        # util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
     """

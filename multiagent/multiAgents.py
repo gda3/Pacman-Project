@@ -329,17 +329,112 @@ If you win at least once without timing out the autograder, you receive 1 points
 The additional points for average score and computation time will only be awarded if you win at least 5 times.
 
 """
-
 def betterEvaluationFunction(currentGameState):
-	"""
-	  Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-	  evaluation function (question 5).
+    """
+      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+      evaluation function (question 5).
+      DESCRIPTION: <write something here so we know what you did>
+    """
 
-	  DESCRIPTION: <write something here so we know what you did>
-	"""
-	"*** YOUR CODE HERE ***"
-	util.raiseNotDefined()
+    food = currentGameState.getFood().asList()
+    ghosts = currentGameState.getGhostStates()
+    pacmanPosition = currentGameState.getPacmanPosition()
+    activeGhosts = [] # Keep active ghosts(can eat pacman)
+    scaredGhosts = [] # Keep scared ghosts(pacman should eat them for extra points)
+    
+    totalCapsules = len(currentGameState.getCapsules()) # Keep total capsules
+    totalFood = len(food) # Keep total remaining food
+    
+    myEval = 0 # Evaluation value
+
+    # Fix active and scared ghosts #
+    for ghost in ghosts:
+        if ghost.scaredTimer: # Is scared ghost
+            scaredGhosts.append(ghost)
+        else:
+            activeGhosts.append(ghost)
+
+    # Score weight: 1.5                                    #
+    # Better score -> better result                        #
+    # Score tell us some informations about current state  #
+    # but the weight is low. We don't care enough for this #
+    # But we do not want to lose                           #
+    myEval += 1.5 * currentGameState.getScore()
+
+    # Food weight: -10                                   #
+    # Pacman will receive 10 points if he eats one food  #
+    # If our state has a lot of food this is very bad    #
+    # We are far away from our goal. If pacman eats food #
+    # Evaluation value will be better in the new         #
+    # state, because remaining food is less              #
+    myEval += -10 * totalFood
+
+    # Capsules weight: -20                            #
+    # Same like food but pacman gains a huge amount   #
+    # of points if he eats ghosts. So our goal is to  #
+    # eat a capsule and then eat a ghost              #
+    # For that reason pacman should eat capsules more #
+    # frequently than food                            #
+    # Weight food < Weight capsules                   #
+    myEval += -20 * totalCapsules
+
+    # Keep distances from food, active and scared ghosts #
+    foodDistances = []
+    activeGhostsDistances = []
+    scaredGhostsDistances = []
+
+    # Find distances #
+    for item in food:
+        foodDistances.append(manhattanDistance(pacmanPosition, item))
+
+    for item in activeGhosts:
+        scaredGhostsDistances.append(manhattanDistance(pacmanPosition, item.getPosition()))
+
+    for item in scaredGhosts:
+        scaredGhostsDistances.append(manhattanDistance(pacmanPosition, item.getPosition()))
+
+    # Fix evaluation based on food distances  #
+    # It is very bad for pacman to have close #
+    # food. He must eat it.                   #
+    # Close food weight: -1                   #
+    # Quite close food weight: -0.5           #
+    # Far away food weight: -0.2              #
+    for item in foodDistances:
+        if item < 3:
+            myEval += -1 * item
+        if item < 7:
+            myEval += -0.5 * item
+        else:
+            myEval += -0.2 * item
+
+    # Fix evaluation based on scared ghosts distances    #
+    # It is very bad for pacman to have close scared     #
+    # ghosts. He must eat them so as to gain many points #
+    # We should prefer to eat a ghost rather than eat a  #
+    # close food                                         #
+    # Close scared ghosts weight: -20                    #
+    # Quite close scared ghosts weight: -10              #
+    for item in scaredGhostsDistances:
+        if item < 3:
+            myEval += -20 * item
+        else:
+            myEval += -10 * item
+
+    # Fix evaluation base on active ghosts distances    #
+    # Pacman should avoid active ghosts                 #
+    # Close ghost weight: 3                             #
+    # Quite close ghost weight: 2                       #
+    # Far away ghosts weight: 0.5                       #
+    # We should prefer ghosts remaining far away        #
+    for item in activeGhostsDistances:
+        if item < 3:
+            myEval += 3 * item
+        elif item < 7:
+            myEval += 2 * item
+        else:
+            myEval += 0.5 * item
+
+    return myEval
 
 # Abbreviation
 better = betterEvaluationFunction
-

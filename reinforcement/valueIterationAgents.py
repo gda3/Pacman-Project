@@ -43,19 +43,18 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.iterations = iterations
         self.values = util.Counter() # A Counter is a dict with default 0
 
-        # Q(s,a) = Sumatori de T(s, a, s') * [R(s, a, s') + BETA*V(s')]
-
         # Write value iteration code here
         for _ in range(self.iterations):
-          values = util.Counter() # Copy of the value
-          for state in self.mdp.getStates():
-            QValueForAction = util.Counter() # Copy                
-            for action in self.mdp.getPossibleActions(state):
+          values = util.Counter() # Copy the value
+          for state in self.mdp.getStates(): # For each state in the mdp
+            QValueForAction = util.Counter() # Copy the V(s)
+            for action in self.mdp.getPossibleActions(state): # Compute Q(s,a)
               QValueForAction[action] = self.computeQValueFromValues(state, action) # Compute Q values for each action
             values[state] = QValueForAction[QValueForAction.argMax()] # Which is the action that has de greatest Q value
             
-          self.values = values          
+          self.values = values  
 
+        # At this point we have generated a policy map in N iterations        
 
     def getValue(self, state):
         """
@@ -63,18 +62,20 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         return self.values[state]
 
-
     def computeQValueFromValues(self, state, action):
         """
           Compute the Q-value of action in state from the
           value function stored in self.values.
         """
+
         QValue = 0
         for nextState, prob in self.mdp.getTransitionStatesAndProbs(state, action):
-          QValue += prob * (self.mdp.getReward(state, action, nextState) + self.discount*self.values[nextState])
+          # Q(s,a) = Sumatori de T(s, a, s') * [R(s, a, s') + BETA*V(s')]
+          QValue += prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
 
         return QValue
 
+    # Computes the optimal policy:  pi*(s) = optimal action from state s
     def computeActionFromValues(self, state):
         """
           The policy is the best action in the given state
@@ -85,6 +86,7 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
 
+        # Has the enviornment entered a terminal state? This means there are no successors
         if self.mdp.isTerminal(state): return None
 
         # get the best possible action for the state

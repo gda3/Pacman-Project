@@ -310,15 +310,50 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         # util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState):
-    """
-      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-      evaluation function (question 5).
+  """
+    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+    evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
-    """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    DESCRIPTION: <write something here so we know what you did>
+  """
+  import sys
+
+  newPos = currentGameState.getPacmanPosition()
+  newFood = currentGameState.getFood()
+  newGhostStates = currentGameState.getGhostStates()
+  newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+  old_food = currentGameState.getFood()
+  total_score = 0.0
+
+  for x in xrange(old_food.width):
+    for y in xrange(old_food.height):
+      if(old_food[x][y]):
+        d = manhattanDistance((x,y),newPos)
+        if (d==0):
+          total_score +=100
+        else:
+          total_score += 1.0/(d*d)
+                  
+  #total_score = successorGameState.getScore()
+  for ghost in newGhostStates:
+    d=manhattanDistance(ghost.getPosition(), newPos)
+    if (d<=1):
+      if(ghost.scaredTimer!=0):
+        total_score += 2000
+      else:
+        total_score -=200
+
+  for capsule in currentGameState.getCapsules():
+    d = manhattanDistance(capsule, newPos) # posicion del pacman  
+    if(d == 0):
+      total_score += 200            # cuando llega a distancia 0 se la come
+    else:
+      total_score += 1.0/(d*d)      # lleva al pacman a por la comida           
+  
+  return total_score + 90 * currentGameState.getScore()  # para que el pacman intente siempre hacer el maximo score
 
 # Abbreviation
 better = betterEvaluationFunction
+
+#util.raiseNotDefined()
 

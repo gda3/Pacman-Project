@@ -99,7 +99,6 @@ class QLearningAgent(ReinforcementAgent):
         actions = self.getLegalActions(state)
         action = None
         
-
         if actions:
           if util.flipCoin(self.epsilon):
             return random.choice(actions)
@@ -180,15 +179,35 @@ class ApproximateQAgent(PacmanQAgent):
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        return self.getWeights() * self.featExtractor.getFeatures(state, action)
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        sample_estimate = reward + self.discount * self.computeValueFromQValues(nextState)
+        difference = sample_estimate - self.getQValue(state, action)
+        features = self.featExtractor.getFeatures(state, action)
+        for feature_key in features:
+            self.weights[feature_key] += self.alpha * difference * features[feature_key]
+
+    def computeValueFromQValues(self, state):
+        """
+          Returns max_action Q(state,action)
+          where the max is over legal actions.  Note that if
+          there are no legal actions, which is the case at the
+          terminal state, you should return a value of 0.0.
+        """    
+        actions = self.getLegalActions(state)
+        if not actions:
+            return 0.0
+
+        tmp = util.Counter()
+
+        tmp = (self.getQValue(state, action) for action in actions)
+
+        return max(tmp)
 
     def final(self, state):
         "Called at the end of each game."

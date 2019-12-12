@@ -95,8 +95,19 @@ class QLearningAgent(ReinforcementAgent):
           HINT: You might want to use util.flipCoin(prob)
           HINT: To pick randomly from a list, use random.choice(list)
         """
-        util.raiseNotDefined()
 
+        actions = self.getLegalActions(state)
+        action = None
+        
+
+        if actions:
+          if util.flipCoin(self.epsilon):
+            return random.choice(actions)
+          else:
+            return self.getPolicy(state)
+
+        return action
+        
     def update(self, state, action, nextState, reward):
         """
           The parent class calls this to observe a
